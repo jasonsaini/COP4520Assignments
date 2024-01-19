@@ -20,8 +20,17 @@ fn is_prime(n:u64) -> bool {
 }
 
 
-fn find_primes_in_range(start, end){
-
+fn find_primes_in_range(start:u64, end:u64, primes: &Arc<Mutex<Vec<u64>>>, num_primes :  &Arc<Mutex<u64>>, sum_primes: &Arc<Mutex<u64>>){
+    for number in start..=end{
+        if is_prime(number)
+        {
+            // push to primes array from within thread
+            let mut primes_lock = primes.lock();
+            primes_lock.push(number);
+            *num_primes += 1
+            *sum_primes += number
+        }
+    }
 }
 
 fn main()
@@ -35,23 +44,28 @@ fn main()
     let target = 10 ^ 8;
     let segment = target / num_threads;
 
+    let primes = Arc::new(Mutex::new(Vec::new()));
     let num_primes = 0;
     let sum_primes = 0;
 
     for i n 1..=num_threads{
+        let primes = Arc::clone(&primes)
         let start = i * segment;
         let end = if i == num_threads { target } else { i * segment}
         // move protects data manipulation from main thread
         let t = thread::spawn(move || {
-            println!("pass")
+            find_primes_in_range(start,end,&primes)
         });
+        threads.push(t);
     }
 
+    for t in threads{
+        t.join();
+    }
 
     // end execution timer
     let exec_time = start_time.elapsed();
-
-    
+    let prime_lock = primes.lock()
     println!("Execution Time: {} ms", exec_time.as_millis())
     println!("{} primes found", num_primes)
     println!("Sum of all primes is {}.", sum_primes)
