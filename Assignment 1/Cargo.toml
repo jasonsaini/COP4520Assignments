@@ -1,0 +1,7 @@
+[package]
+name = "Prime Finder"
+version = "0.1.0"
+authors = ["Jason Saini"]
+edition = "2024"
+
+[dependencies]
