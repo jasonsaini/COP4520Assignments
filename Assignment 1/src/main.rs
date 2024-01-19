@@ -6,15 +6,9 @@ fn is_prime(n:u64) -> bool {
     if n <= 1{
         return false;
     }
-    let n = n as f64;
+    let sqrt_n = (n as f64).sqrt() as u64;
 
-    let sqrt_n = n.sqrt();
-
-    let truncated_sqrt = sqrt_n as u64;
-
-    let adjusted = truncated_sqrt + 1;
-
-    for i in 2..sqrt_n {
+    for i in 2..=sqrt_n {
         // if a number divides evenly within it's range, it's not prime
         if n % i == 0 {
             return false;
@@ -26,18 +20,10 @@ fn is_prime(n:u64) -> bool {
 
 fn main()
 {
-    let mut handles = vec![];
-
-    for i in 0..5{
-        let handle = thread::spawn(move || {
-            println!("Hello from thread number {}", i);
-            thread::sleep(Duration::from_millis(500))
-        });
-        handles.push(handle)
+    for i in 1..28{
+        if is_prime(i)
+        {
+            println!("{} is a prime number!", i);
+        }
     }
-
-    for handle in handles{
-        handle.join().unwrap()
-    }
-    println!("All threads have finished.")
 }
