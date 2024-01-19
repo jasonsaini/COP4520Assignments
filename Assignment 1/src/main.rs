@@ -1,7 +1,7 @@
 use std::thread;
 use std::time::Duration;
 use std::time::Instant;
-
+use std::sync::Mutex;
 
 fn is_prime(n:u64) -> bool {
     // we don't count 0 or 1 as prime
@@ -27,8 +27,8 @@ fn find_primes_in_range(start:u64, end:u64, primes: &Arc<Mutex<Vec<u64>>>, num_p
             // push to primes array from within thread
             let mut primes_lock = primes.lock();
             primes_lock.push(number);
-            *num_primes += 1
-            *sum_primes += number
+            *num_primes += 1;
+            *sum_primes += number;
         }
     }
 }
