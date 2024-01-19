@@ -1,7 +1,7 @@
 [package]
-name = "Prime Finder"
+name = 'PrimeFinder'
 version = "0.1.0"
 authors = ["Jason Saini"]
-edition = "2024"
+edition = "2018"
 
 [dependencies]
