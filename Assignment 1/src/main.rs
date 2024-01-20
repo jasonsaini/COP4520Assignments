@@ -2,6 +2,7 @@ use std::thread;
 use std::time::Duration;
 use std::time::Instant;
 use std::sync::Mutex;
+use std::sync::Arc;
 
 fn is_prime(n:u64) -> bool {
     // we don't count 0 or 1 as prime
@@ -25,10 +26,14 @@ fn find_primes_in_range(start:u64, end:u64, primes: &Arc<Mutex<Vec<u64>>>, num_p
         if is_prime(number)
         {
             // push to primes array from within thread
-            let mut primes_lock = primes.lock();
+            let mut primes_lock = primes.lock().unwrap();
             primes_lock.push(number);
-            *num_primes += 1;
-            *sum_primes += number;
+           
+            let num_primes_lock = num_primes.lock().unwrap()
+            *num_primes_lock += 1;
+
+            let sum_primes_lock = sum_primes.lock().unwrap();
+            *sum_primes_lock += number;
         }
     }
 }
@@ -45,16 +50,15 @@ fn main()
     let segment = target / num_threads;
 
     let primes = Arc::new(Mutex::new(Vec::new()));
-    let num_primes = 0;
-    let sum_primes = 0;
-
-    for i n 1..=num_threads{
-        let primes = Arc::clone(&primes)
+    let num_primes = Arc::new(Mutex::new(0));
+    let sum_primes =  Arc::new(Mutex::new(0));
+    for i in 1..=num_threads{
+        let primes = Arc::clone(&primes);
         let start = i * segment;
         let end = if i == num_threads { target } else { i * segment}
         // move protects data manipulation from main thread
         let t = thread::spawn(move || {
-            find_primes_in_range(start,end,&primes)
+            find_primes_in_range(start,end,&primes, &num_primes, &sum_primes)
         });
         threads.push(t);
     }
@@ -65,10 +69,11 @@ fn main()
 
     // end execution timer
     let exec_time = start_time.elapsed();
-    let prime_lock = primes.lock()
+    let prime_lock = primes.lock().unwrap();
+    println!("State of primes: {}", *prime_lock)
     println!("Execution Time: {} ms", exec_time.as_millis())
-    println!("{} primes found", num_primes)
-    println!("Sum of all primes is {}.", sum_primes)
+    //println!("{} primes found", num_primes)
+    //println!("Sum of all primes is {}.", sum_primes)
 
 
 }
