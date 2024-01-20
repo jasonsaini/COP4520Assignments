@@ -77,7 +77,7 @@ fn main()
     let exec_time = start_time.elapsed();
     let prime_lock = primes.lock().unwrap();
     println!("State of primes: {:?}", *prime_lock);
-    println!("Execution Time: {} ms", exec_time.as_millis());
+    println!("Execution Time: {} seconds", exec_time.as_secs());
     //println!("{} primes found", num_primes)
     //println!("Sum of all primes is {}.", sum_primes)
 
