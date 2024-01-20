@@ -28,12 +28,15 @@ fn find_primes_in_range(start:u64, end:u64, primes: &Arc<Mutex<Vec<u64>>>, num_p
             // push to primes array from within thread
             let mut primes_lock = primes.lock().unwrap();
             primes_lock.push(number);
-           
+            //println!("Primes: {:?}", *primes_lock);
+
             let mut num_primes_lock = num_primes.lock().unwrap();
             *num_primes_lock += 1;
+            println!("Prime count: {}", *num_primes_lock);
 
             let mut sum_primes_lock = sum_primes.lock().unwrap();
             *sum_primes_lock += number;
+            println!("Prime sum: {}", *sum_primes_lock);
         }
     }
 }
