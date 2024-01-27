@@ -1,85 +1,81 @@
+use std::collections::HashMap;
 use std::thread;
 use std::time::Duration;
 use std::time::Instant;
 use std::sync::Mutex;
 use std::sync::Arc;
 
-fn is_prime(n:u64) -> bool {
-    // we don't count 0 or 1 as prime
-    if n <= 1{
-        return false;
-    }
-    let sqrt_n = (n as f64).sqrt() as u64;
+const TARGET: usize = 100_000_000;
+const NUM_THREADS: usize = 8;
 
-    for i in 2..=sqrt_n {
-        // if a number divides evenly within it's range, it's not prime
-        if n % i == 0 {
-            return false;
-        }
+fn is_prime(n:usize, memo:&Arc<Mutex<HashMap<usize,bool>>>) -> bool {
+    let mut memo = memo.lock().unwrap();
+
+    if let Some(&result) = memo.get(&n){
+        return result;
     }
+
+    let upper_lim = (n as f64).sqrt() as usize;
+
+    for i in 2..=upper_lim{
+       if n % i == 0{
+        memo.insert(n, false);
+        return false;
+       }
+    }
+    memo.insert(n,true);
     return true;
 }
 
 
-fn find_primes_in_range(start:u64, end:u64, primes: &Arc<Mutex<Vec<u64>>>, num_primes :  &Arc<Mutex<u64>>, sum_primes: &Arc<Mutex<u64>>){
-    for number in start..=end{
-        if is_prime(number)
-        {
-            // push to primes array from within thread
-            let mut primes_lock = primes.lock().unwrap();
-            primes_lock.push(number);
-            //println!("Primes: {:?}", *primes_lock);
-
-            let mut num_primes_lock = num_primes.lock().unwrap();
-            *num_primes_lock += 1;
-            println!("Prime count: {}", *num_primes_lock);
-
-            let mut sum_primes_lock = sum_primes.lock().unwrap();
-            *sum_primes_lock += number;
-            println!("Prime sum: {}", *sum_primes_lock);
-        }
-    }
-}
 
 fn main()
 {
     // start recording exec time
     let start_time = Instant::now();
 
-    let num_threads = 8;
     let mut threads = Vec::new();
 
-    let base = 10 as u64;
-    let target = base.pow(8);
-    let segment = target / num_threads;
+    let count = Arc::new(Mutex::new(2));
 
-    let primes = Arc::new(Mutex::new(Vec::new()));
-    let num_primes = Arc::new(Mutex::new(0));
-    let sum_primes =  Arc::new(Mutex::new(0));
-    for i in 1..=num_threads{
-        let primes = Arc::clone(&primes);
-        let num_primes = Arc::clone(&num_primes);
-        let sum_primes = Arc::clone(&sum_primes);
-        let start = i * segment;
-        let end = if i == num_threads { target } else { (i + 1) * segment};
-        // move protects data manipulation from main thread
-        let t = thread::spawn(move || {
-            find_primes_in_range(start,end,&primes, &num_primes, &sum_primes)
-        });
-        threads.push(t);
+    let thread_sums = Arc::new(Mutex::new(vec![0; NUM_THREADS]));
+    let memo = Arc::new(Mutex::new(HashMap::new()));
+    for i in 0..NUM_THREADS{
+       let count = Arc::clone(&count);
+       let thread_sums = Arc::clone(&thread_sums);
+       let memo = Arc::clone(&memo);
+       
+       let thread = thread::spawn(move || {
+        loop {
+            let mut num = count.lock().unwrap();
+
+            let val = *num;
+            *num += 1;
+
+            drop(num);
+
+            if val > TARGET { break; }
+
+            if is_prime(val, &memo) {
+                let mut total = thread_sums.lock().unwrap();
+                total[val % NUM_THREADS] += val;
+            }
+
+            if val % 10000 == 0 { println!("{}", val); }
+        }
+    });
+
+        threads.push(thread);
     }
 
     for t in threads{
-       let _ =  t.join();
+       t.join().unwrap();
     }
 
     // end execution timer
     let exec_time = start_time.elapsed();
-    let prime_lock = primes.lock().unwrap();
-    println!("State of primes: {:?}", *prime_lock);
+    let total:usize = thread_sums.lock().unwrap().iter().sum();
+    println!("Total: {:?}", total);
     println!("Execution Time: {} seconds", exec_time.as_secs());
-    //println!("{} primes found", num_primes)
-    //println!("Sum of all primes is {}.", sum_primes)
-
 
 }
