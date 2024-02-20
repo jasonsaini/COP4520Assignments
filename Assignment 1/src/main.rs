@@ -1,5 +1,7 @@
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+Rust
+use std::cmp;
+use std::collections::HashSet;
+use std::sync::Arc;
 use std::thread;
 use std::time::Instant;
 use std::fs::File;
@@ -8,50 +10,58 @@ use std::io::Write;
 const TARGET: usize = 100_000_000;
 const NUM_THREADS: usize = 8;
 
-fn is_prime(n: usize, memo: &Arc<Mutex<HashMap<usize, bool>>>) -> bool {
-    if n < 2 {
-        return false;
+// Pre-compute primes up to a certain limit
+fn sieve_primes(limit: usize) -> HashSet<usize> {
+    let mut is_prime = vec![true; limit + 1];
+    is_prime[0] = is_prime[1] = false;
+    for i in 2..=(limit as f64).sqrt() as usize {
+        if is_prime[i] {
+            for j in (i * i..=limit).step_by(i) {
+                is_prime[j] = false;
+            }
+        }
     }
-    if n == 2 {
-        return true;
-    }
-    if n % 2 == 0 {
-        return false;
-    }
-    let mut memo = memo.lock().unwrap();
+    is_prime.iter().enumerate().filter(|&(i, is_prime)| *is_prime)
+        .map(|(i, _)| i).collect()
+}
 
-    if let Some(&result) = memo.get(&n) {
-        return result;
-    }
-    let upper_lim = (n as f64).sqrt() as usize;
-    for i in (3..=upper_lim).step_by(2) {
-        if n % i == 0 {
-            memo.insert(n, false);
+fn is_prime_threaded(n: usize, precomputed_primes: &[u32], sieve: &HashSet<usize>) -> bool {
+    // Check precomputed primes first
+    for &prime in precomputed_primes {
+        if n == prime {
+            return true;
+        } else if n % prime == 0 {
             return false;
         }
     }
-    memo.insert(n, true);
-    true
+
+    // Check against pre-computed sieve of Eratosthenes
+    sieve.contains(&n)
 }
 
 fn main() {
     let start_time = Instant::now();
 
+    // Pre-compute small primes and sieve for larger ones
+    let limit = PRECOMPUTED_PRIMES.last().unwrap() * PRECOMPUTED_PRIMES.last().unwrap();
+    let precomputed_primes = PRECOMPUTED_PRIMES.to_vec();
+    let sieve = sieve_primes(limit);
+
     let thread_sums = Arc::new(Mutex::new(vec![0; NUM_THREADS]));
-    let memo = Arc::new(Mutex::new(HashMap::new()));
     let mut threads = Vec::new();
-    let chunk_size = TARGET / NUM_THREADS;
+    let chunk_size = (TARGET - limit) / NUM_THREADS; // Adjust for pre-computed range
 
     for i in 0..NUM_THREADS {
-        let start = i * chunk_size + 1;
-        let end = if i == NUM_THREADS - 1 { TARGET } else { (i + 1) * chunk_size };
+        let start = limit + i * chunk_size + 1;
+        let end = if i == NUM_THREADS - 1 { TARGET } else { limit + (i + 1) * chunk_size };
         let thread_sums = Arc::clone(&thread_sums);
-        let memo = Arc::clone(&memo);
+        let precomputed_primes = precomputed_primes.clone();
+        let sieve = sieve.clone();
 
         let thread = thread::spawn(move || {
             let mut local_sum = 0;
-            for num in (start..=end).step_by(2) { // Only check odd numbers
-                if is_prime(num, &memo) {
+            for num in (start..=end).step_by(2) {
+                if is_prime_threaded(num, &precomputed_primes, &sieve) {
                     local_sum += num;
                 }
             }
