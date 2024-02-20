@@ -45,12 +45,12 @@ fn main() {
 
     let thread_sums = Arc::new(Mutex::new(vec![0; NUM_THREADS]));
     let mut threads = Vec::new();
-    
+
     let chunk_size = ((TARGET - limit) + NUM_THREADS - 1) / NUM_THREADS;
 
     for i in 0..NUM_THREADS {
         let start = cmp::max(2, limit + i * chunk_size);
-        let end = if i == NUM_THREADS - 1 { TARGET } else { start + chunk_size };
+        let end = if i == NUM_THREADS - 1 { TARGET } else { start + chunk_size - 1 };
         let thread_sums = Arc::clone(&thread_sums);
         let precomputed_primes = precomputed_primes.clone();
         let sieve = sieve.clone();
@@ -62,9 +62,11 @@ fn main() {
             for num in (start..=end).step_by(2) {
                 if is_prime_threaded(num, &precomputed_primes, &sieve) {
                     println!("Thread {}: Prime {}", i, num); // Debugging print
-                    local_sum += num;
+                   
                 }
+                local_sum += num;
             }
+            println!("Local sum = {}", local_sum);
             let mut total = thread_sums.lock().unwrap();
             total[i] += local_sum;
         });
