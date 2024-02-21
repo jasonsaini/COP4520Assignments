@@ -1,7 +1,7 @@
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Scanner;
 
-public class Main {
+public class Problem1 {
     private static AtomicInteger guestsWhoEntered = new AtomicInteger(0);
     private static boolean cupcake = true;
     private static boolean gameFinished = false;
