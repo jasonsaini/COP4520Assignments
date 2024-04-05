@@ -1,0 +1,36 @@
+# The Minotaur's Birthday Present Party
+
+## Overview
+This Java program simulates a unique birthday party hosted by the Minotaur. After receiving numerous gifts, the Minotaur employs his servants to sort the presents using a concurrent linked list and write "Thank You" cards. Each servant is represented as a thread, operating concurrently to manage the presents effectively.
+
+## Features
+- **Concurrent Servants Handling**: Each servant's action is represented by a thread, simulating simultaneous gift handling.
+- **Thread Safety**: The program uses synchronized methods and blocks to ensure thread safety in a concurrent environment.
+- **Efficient Data Structure**: The concurrent linked list provides an efficient way to sort and access presents.
+
+## Correctness
+- **Synchronization**: Critical sections of the code are synchronized to prevent race conditions.
+- **Atomic Operations**: The addition and removal of presents are atomic, ensuring consistency.
+- **Accurate Gift Tracking**: The program keeps track of all presents, ensuring that each gift is handled appropriately.
+
+## Efficiency
+- **Minimized Locking**: The application of locks is minimized to reduce thread contention and maintain efficiency.
+- **Balanced Load among Threads**: Each servant thread performs an equal amount of work, distributing the load evenly.
+- **Quick Task Completion**: The concurrent approach significantly speeds up the task of sorting presents and writing cards.
+
+## Experimental Evaluation
+- **Functional Testing**: Testing with a large number of presents to ensure proper functionality under different scenarios.
+- **Performance Analysis**: Evaluating the program's performance in terms of execution time and resource utilization.
+- **Concurrency Testing**: Ensuring that the application correctly handles concurrent access to the linked list without any data inconsistency.
+
+## Setup and Execution
+
+### Prerequisites
+- Java Development Kit (JDK) 8 or above.
+
+### Compilation
+Navigate to the source directory and compile the Java files using:
+```bash
+javac MinotaursParty.java
+java MinotaursParty
+```
