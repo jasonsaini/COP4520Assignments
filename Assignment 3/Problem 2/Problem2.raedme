@@ -1,0 +1,36 @@
+# Atmospheric Temperature Reading Module for Mars Rover
+
+## Overview
+This Java program is part of the Mars Rover's next-generation atmospheric temperature module. It simulates the operation of 8 temperature sensors, each running on a separate thread, and compiles hourly reports of the temperature data. These reports include the top 5 highest and lowest temperatures recorded during the hour, and the 10-minute interval showing the largest temperature difference.
+
+## Features
+- **Multithreaded Sensor Simulation**: Uses 8 threads to simulate the operation of multiple temperature sensors.
+- **Shared Memory Management**: Efficiently manages a shared memory space for temperature data storage.
+- **Complex Report Generation**: Analyzes and compiles comprehensive temperature reports every hour.
+
+## Correctness
+- **Safe Concurrent Access**: Implements locks to ensure thread-safe operations on shared memory.
+- **Accurate Data Analysis**: Provides reliable computations of the highest and lowest temperatures and identifies the interval with the largest temperature difference.
+- **Exception Handling**: Includes measures to handle interruptions and exceptions in thread execution.
+
+## Efficiency
+- **Optimized Thread Utilization**: Balances workload among threads for efficient data collection.
+- **Minimized Lock Contention**: Implements locks in a way to reduce contention and maintain high performance.
+- **Scalable Design**: Structured to handle increased data volumes and additional sensors.
+
+## Experimental Evaluation
+- **Simulated Temperature Readings**: Incorporates randomized temperature generation for testing functionality.
+- **Performance Metrics**: Includes execution time and resource usage analysis for performance assessment.
+- **Concurrency Safety Checks**: Ensures the correct handling of shared resources without data races or deadlocks.
+
+## Setup and Execution
+
+### Prerequisites
+- Java Development Kit (JDK) 8 or later.
+
+### Compilation
+To compile the program, navigate to the source directory and execute:
+```bash
+javac Problem2.java
+java Problem2
+```
